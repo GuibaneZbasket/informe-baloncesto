@@ -8,6 +8,8 @@ from .analysis import period_label
 from .cronica import write as write_cronica
 from .teams import short_name
 
+FOOTER = "Generado automáticamente a partir del play-by-play oficial de la Euroliga."
+
 CSS = r"""
 :root{--bg:#f9f9f7;--card:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;
 --axis:#c3c2b7;--border:rgba(11,11,11,.10);--home:#2a78d6;--away:#eb6834;--chip:#efeee9;--hl:#f3f2ed}
@@ -136,7 +138,7 @@ def _short(n):
 
 def tname(g, s):
     t = g["teams"][s]
-    return short_name(t["code"], t["name"])
+    return t.get("short") or short_name(t["code"], t["name"])
 
 
 def badge(code, side):
@@ -156,7 +158,7 @@ def page(title, body, demo=False, depth=0):
 <title>{esc(title)}</title>
 <style>{CSS}</style></head>
 <body>{banner}<div class="wrap">{body}
-<footer>Generado automáticamente a partir del play-by-play oficial de la Euroliga.</footer>
+<footer>{FOOTER}</footer>
 </div></body></html>"""
 
 
@@ -344,9 +346,12 @@ def round_page(games, crons, round_label, rounds_all, demo=False, competition="E
                    for a, b, c in rec)
     nav = "".join(f'<a class="pill{" on" if r == round_label else ""}" href="{_round_file(r)}">J{esc(str(r))}</a>'
                   for r in rounds_all)
+    extra_nav = ('<div class="nav"><a class="pill" href="app/">📋 App Banquillo</a>'
+                 '<a class="pill" href="equipo/">Nuestro equipo</a></div>') if competition == "Euroliga" else \
+        '<div class="nav"><a class="pill" href="../app/">📋 App Banquillo</a><a class="pill" href="../">Euroliga</a></div>'
     body = f"""<header class="top"><div class="kicker">Informe {competition}</div>
 <h1>Jornada {esc(str(round_label))}</h1><div class="sub">{esc(" y ".join(dates))} · {len(games)} partidos</div>
-<div class="nav">{nav}</div></header>
+<div class="nav">{nav}</div>{extra_nav}</header>
 <section><h2>Resultados</h2><div class="grid">{cards}</div></section>
 <section><h2>Récords de la jornada</h2><div class="tiles">{recs}</div></section>
 <section><div class="card"><h2>Mejores valoraciones</h2><ul class="list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));column-gap:28px">{tops}</ul></div></section>
@@ -354,7 +359,7 @@ def round_page(games, crons, round_label, rounds_all, demo=False, competition="E
 <tr><th>Equipo</th><th>Res.</th><th>ORtg</th><th>DRtg</th><th>Net</th><th>Ritmo</th><th>eFG%</th><th>PER%</th><th>RO%</th></tr>
 {teams_rows}</table></div><p class="glos">ORtg/DRtg: puntos anotados/recibidos por cada 100 posesiones. Net: diferencia. PER%: pérdidas por posesión. RO%: rebotes ofensivos capturados sobre los disponibles.</p></div>
 </section>"""
-    return page(f"Euroliga · Jornada {round_label}", body, demo)
+    return page(f"{competition} · Jornada {round_label}", body, demo)
 
 
 def _date_key(d):
@@ -375,7 +380,8 @@ def box_table(g, s):
     rows = ""
     for r in g["box"][s]:
         star = "*" if r["starter"] else ""
-        rows += (f'<tr><td>{esc(r["num"])} {esc(r["name"])}{star}</td><td data-v="{r["SEC"]}">{r["MIN"]}</td>'
+        label = r["name"] if r["name"].startswith("#") else f'{r["num"]} {r["name"]}'
+        rows += (f'<tr><td>{esc(label)}{star}</td><td data-v="{r["SEC"]}">{r["MIN"]}</td>'
                  f'<td>{r["PTS"]}</td><td data-v="{r["2PM"]}">{r["2PM"]}/{r["2PA"]}</td>'
                  f'<td data-v="{r["3PM"]}">{r["3PM"]}/{r["3PA"]}</td><td data-v="{r["FTM"]}">{r["FTM"]}/{r["FTA"]}</td>'
                  f'<td>{r["OREB"]}</td><td>{r["DREB"]}</td><td>{r["REB"]}</td><td>{r["AST"]}</td><td>{r["STL"]}</td>'
@@ -612,8 +618,10 @@ document.querySelectorAll('table.pbp tr').forEach(function(r){{r.hidden=(f==='sc
 
 # ---------------------------------------------------------------- sitio
 
-def build_site(games, out_dir, demo=False, competition="Euroliga"):
+def build_site(games, out_dir, demo=False, competition="Euroliga", footer=None):
     """games: lista de análisis (salida de analysis.analyze)."""
+    global FOOTER
+    FOOTER = footer or "Generado automáticamente a partir del play-by-play oficial de la Euroliga."
     os.makedirs(os.path.join(out_dir, "partidos"), exist_ok=True)
     by_round = {}
     for g in games:

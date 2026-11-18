@@ -5,6 +5,9 @@ on:
     # 06:15 UTC = 07:15 en Madrid en invierno (08:15 en verano)
     - cron: "15 6 * * *"
   workflow_dispatch: {}   # botón "Run workflow" para lanzarlo a mano
+  push:                   # al subir un partido de la app o cambiar la app
+    branches: [main]
+    paths: ["data/equipo/**", "app/**"]
 
 permissions:
   contents: write

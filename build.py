@@ -72,6 +72,54 @@ def main():
     games = load_raw(raw_dir, args.season)
     rounds = build_site(games, args.out)
     print(f"Web generada en {args.out}: {len(games)} partidos, jornadas {', '.join(rounds)}")
+    build_own(args.out)
+    copy_app(args.out)
+
+
+def build_own(out):
+    """Partidos de nuestro equipo anotados con la app (data/equipo/*.json)."""
+    d = os.path.join(ROOT, "data", "equipo")
+    games = []
+    for f in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        if not f.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(d, f), encoding="utf-8") as fh:
+                data = json.load(fh)
+            code = os.path.splitext(f)[0]
+            games.append(analyze(data["pbp"], data.get("header") or {}, code, "EQ"))
+        except Exception as e:
+            print(f"  ! {f}: {e}")
+    if not games:
+        from src.render import page
+        os.makedirs(os.path.join(out, "equipo"), exist_ok=True)
+        with open(os.path.join(out, "equipo", "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(page("Nuestro equipo", '<header class="top"><div class="kicker">Informe de nuestro equipo</div>'
+                          '<h1>Aún no hay partidos</h1><p class="sub">Anota un partido con la '
+                          '<a href="../app/"><b>App Banquillo</b></a>, expórtalo y súbelo a la carpeta '
+                          '<b>data/equipo</b> del repositorio.</p></header>'))
+        return
+
+    def dkey(g):
+        try:
+            dd, mm, yy = (g.get("date") or "").split("/")
+            return (int(yy), int(mm), int(dd))
+        except ValueError:
+            return (0, 0, 0)
+    for i, g in enumerate(sorted(games, key=dkey), 1):
+        if not g.get("round"):
+            g["round"] = str(i)
+    build_site(games, os.path.join(out, "equipo"), competition="de nuestro equipo",
+               footer="Generado a partir del play-by-play anotado con la app Banquillo.")
+    print(f"Informes del equipo: {len(games)} partidos")
+
+
+def copy_app(out):
+    """Publica la app de anotación en docs/app."""
+    import shutil
+    src = os.path.join(ROOT, "app")
+    if os.path.isdir(src):
+        shutil.copytree(src, os.path.join(out, "app"), dirs_exist_ok=True)
 
 
 if __name__ == "__main__":

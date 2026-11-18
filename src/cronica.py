@@ -20,7 +20,7 @@ class T:
 
     def name(self, s):
         t = self.g["teams"][s]
-        return short_name(t["code"], t["name"])
+        return t.get("short") or short_name(t["code"], t["name"])
 
     def art(self, s):
         return "la" if self.g["teams"][s]["code"] in FEMININE else "el"

@@ -22,10 +22,10 @@ POINTS = {"2FGM": 2, "3FGM": 3, "FTM": 1}
 FG_MADE = {"2FGM", "3FGM"}
 PLAYER_ACTIONS = {
     "2FGM", "2FGA", "3FGM", "3FGA", "FTM", "FTA", "O", "D", "AS", "ST", "TO",
-    "FV", "AG", "CM", "CMU", "CMD", "CMTI", "OF", "RV", "OUT",
+    "FV", "AG", "CM", "CMU", "CMD", "CMT", "CMTI", "OF", "RV", "OUT",
 }
 OWN_BALL = {"2FGM", "2FGA", "3FGM", "3FGA", "FTM", "FTA", "TO", "O", "OF"}
-FOULS = {"CM", "CMU", "CMD", "CMTI", "OF"}
+FOULS = {"CM", "CMU", "CMD", "CMT", "CMTI", "OF"}
 
 
 def period_length(p):
@@ -146,6 +146,9 @@ def analyze(pbp, header=None, game_code=None, season=None):
     stats = defaultdict(_empty_player)
     team_extra = {"A": defaultdict(float), "B": defaultdict(float)}
     q_points = defaultdict(lambda: defaultdict(int))  # pid -> period -> pts
+    for s, lst in (pbp.get("Rosters") or {}).items():
+        for r in lst:
+            players.setdefault(r["pid"], {"pid": r["pid"], "name": nice_name(r.get("name")), "num": str(r.get("num", "")), "side": s})
     for p in plays:
         s, pid, t = p["side"], p["pid"], p["type"]
         if not s:
@@ -206,8 +209,9 @@ def analyze(pbp, header=None, game_code=None, season=None):
     on = {"A": [], "B": []}
     for per in sorted(by_period):
         pp = by_period[per]
+        given = (pbp.get("Lineups") or {}).get(str(per)) or (pbp.get("Lineups") or {}).get(per)
         for s in "AB":
-            on[s] = infer_starters(pp, s, on[s])
+            on[s] = list(given[s]) if given else infer_starters(pp, s, on[s])
             if per == 1:
                 starters_g[s] = list(on[s])
         last_t = period_start(per)
@@ -521,7 +525,8 @@ def analyze(pbp, header=None, game_code=None, season=None):
         "date": header.get("Date") or header.get("date"),
         "hour": header.get("Hour") or header.get("hour"),
         "venue": header.get("Stadium") or header.get("stadium"),
-        "teams": {s: {"code": codes[s], "name": names[s]} for s in "AB"},
+        "teams": {s: {"code": codes[s], "name": names[s], "short": pbp.get(f"ShortTeam{s}")} for s in "AB"},
+        "us": header.get("Us"),
         "score": final,
         "winner": winner,
         "periods": n_periods,
