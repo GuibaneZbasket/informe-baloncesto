@@ -578,9 +578,6 @@ def match_page(g, c, demo=False):
 <div class="tabs" data-tabs="box"><button class="on" data-t="0">{esc(tname(g, A))}</button><button data-t="1">{esc(tname(g, B))}</button></div>
 <div data-pane="box">{box_table(g, A)}</div><div data-pane="box" hidden>{box_table(g, B)}</div>
 <p class="glos">* titular. Pulsa una cabecera para ordenar. Minutos y +/- calculados siguiendo los cambios del play-by-play.</p></div>
-<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px;align-items:start">
-<div class="card"><h3>En pista / en el banquillo · {esc(tname(g, A))}</h3><div class="scroll"><table><tr><th>Jugador</th><th>Min</th><th>En pista</th><th>Fuera</th><th>Dif.</th></tr>{onoff(A)}</table></div></div>
-<div class="card"><h3>En pista / en el banquillo · {esc(tname(g, B))}</h3><div class="scroll"><table><tr><th>Jugador</th><th>Min</th><th>En pista</th><th>Fuera</th><th>Dif.</th></tr>{onoff(B)}</table></div></div>
 </div></section>
 <section id="cronica" class="cronica"><div class="kicker">Crónica</div><h2>{esc(c["title"])}</h2>{cron}</section>
 <section id="marcador"><h2>Evolución del marcador</h2><div class="card">{margin_chart(g)}</div></section>
