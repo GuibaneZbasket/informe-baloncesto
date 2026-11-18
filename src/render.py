@@ -83,9 +83,9 @@ tr.tot td{font-weight:700;border-top:1px solid var(--axis)}
 .cronica h2{font-size:24px}
 .mvpcard{display:flex;gap:14px;align-items:center}
 .mvpcard .badge{width:56px;height:56px;font-size:13px}
-.mirror{display:grid;grid-template-columns:52px 1fr 1fr 52px;align-items:center;gap:0 6px;font-size:13px;margin:3px 0}
+.mirror{display:grid;grid-template-columns:62px 1fr 1fr 62px;align-items:center;gap:0 6px;font-size:13px;margin:3px 0}
 .mirror .lab{grid-column:1/5;text-align:center;font-size:12px;color:var(--ink2);margin-top:8px}
-.mirror .va{text-align:right;font-weight:600}.mirror .vb{font-weight:600}
+.mirror .va{text-align:right;font-weight:600}.mirror .vb{font-weight:600}.mirror small{display:block;font-weight:400;color:var(--muted);font-size:11px;line-height:1.2}
 .bar{height:10px;background:var(--grid);border-radius:4px;position:relative;overflow:hidden}
 .bar i{position:absolute;top:0;bottom:0;border-radius:4px}
 .bar.a i{right:0;background:var(--home)}.bar.b i{left:0;background:var(--away)}
@@ -426,8 +426,8 @@ def match_page(g, c, demo=False):
 <div class="scroll qtable"><table><tr><th></th>{qhead}<th>Total</th></tr>{qrows}</table></div></div>"""
 
     chips = "".join(f'<a class="pill" href="#{a}">{b}</a>' for a, b in [
-        ("resumen", "Resumen"), ("cronica", "Crónica"), ("marcador", "Marcador"), ("momentos", "Rachas"),
-        ("equipos", "Equipos"), ("avanzada", "Avanzada"), ("jugadores", "Jugadores"), ("cuartos", "Por cuartos"),
+        ("resumen", "Resumen"), ("jugadores", "Jugadores"), ("cronica", "Crónica"), ("marcador", "Marcador"), ("momentos", "Rachas"),
+        ("equipos", "Equipos"), ("avanzada", "Avanzada"), ("cuartos", "Por cuartos"),
         ("quintetos", "Quintetos"), ("pbp", "Jugada a jugada")])
 
     # ---- resumen
@@ -487,9 +487,13 @@ def match_page(g, c, demo=False):
 
     def frac(m, a):
         return f"{m}/{a}"
-    comp = (mirror("Tiros de 2", aa["p2"], ab["p2"], f'{pct(aa["p2"])}', f'{pct(ab["p2"])}', ratio=True)
-            + mirror("Triples", aa["p3"], ab["p3"], pct(aa["p3"]), pct(ab["p3"]), ratio=True)
-            + mirror("Tiros libres", aa["pft"], ab["pft"], pct(aa["pft"]), pct(ab["pft"]), ratio=True)
+    def shot(label, m, a):
+        va = ta[m] / ta[a] if ta[a] else None
+        vb = tb[m] / tb[a] if tb[a] else None
+        return mirror(label, va, vb, f'{pct(va)}<small>{ta[m]}/{ta[a]}</small>',
+                      f'{pct(vb)}<small>{tb[m]}/{tb[a]}</small>', ratio=True)
+    comp = (shot("Tiros de campo", "FGM", "FGA") + shot("Tiros de 2", "2PM", "2PA")
+            + shot("Triples", "3PM", "3PA") + shot("Tiros libres", "FTM", "FTA")
             + mirror("Rebotes", ta["REB"], tb["REB"])
             + mirror("Rebotes ofensivos", ta["OREB"], tb["OREB"])
             + mirror("Asistencias", ta["AST"], tb["AST"])
@@ -570,14 +574,6 @@ def match_page(g, c, demo=False):
 <nav class="chips">{chips}</nav>
 <section id="resumen"><h2>Resumen</h2>{mvp_html}<div class="tiles" style="margin-top:10px">{tiles_html}</div>
 <h3 style="margin-top:16px">Claves del partido</h3><div class="keys">{keys}</div></section>
-<section id="cronica" class="cronica"><div class="kicker">Crónica</div><h2>{esc(c["title"])}</h2>{cron}</section>
-<section id="marcador"><h2>Evolución del marcador</h2><div class="card">{margin_chart(g)}</div></section>
-<section id="momentos" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start">
-<div class="card"><h2>Rachas (parciales sin respuesta)</h2><ul class="list">{runs_html}</ul></div>
-<div class="card"><h2>Tiempo por delante</h2>{lead_html}<ul class="list" style="margin-top:8px">{mom_html}</ul></div></section>
-<section id="equipos"><h2>Comparativa de equipos</h2><div class="card">{leg}{comp}</div></section>
-<section id="avanzada"><h2>Estadística avanzada</h2><div class="card"><div class="scroll"><table>
-<tr><th>Métrica</th><th>{esc(g["teams"][A]["code"])}</th><th>{esc(g["teams"][B]["code"])}</th></tr>{adv_rows}</table></div>{glos}</div></section>
 <section id="jugadores"><h2>Estadísticas de jugadores</h2><div class="card">
 <div class="tabs" data-tabs="box"><button class="on" data-t="0">{esc(tname(g, A))}</button><button data-t="1">{esc(tname(g, B))}</button></div>
 <div data-pane="box">{box_table(g, A)}</div><div data-pane="box" hidden>{box_table(g, B)}</div>
@@ -586,6 +582,15 @@ def match_page(g, c, demo=False):
 <div class="card"><h3>En pista / en el banquillo · {esc(tname(g, A))}</h3><div class="scroll"><table><tr><th>Jugador</th><th>Min</th><th>En pista</th><th>Fuera</th><th>Dif.</th></tr>{onoff(A)}</table></div></div>
 <div class="card"><h3>En pista / en el banquillo · {esc(tname(g, B))}</h3><div class="scroll"><table><tr><th>Jugador</th><th>Min</th><th>En pista</th><th>Fuera</th><th>Dif.</th></tr>{onoff(B)}</table></div></div>
 </div></section>
+<section id="cronica" class="cronica"><div class="kicker">Crónica</div><h2>{esc(c["title"])}</h2>{cron}</section>
+<section id="marcador"><h2>Evolución del marcador</h2><div class="card">{margin_chart(g)}</div></section>
+<section id="momentos" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start">
+<div class="card"><h2>Rachas (parciales sin respuesta)</h2><ul class="list">{runs_html}</ul></div>
+<div class="card"><h2>Tiempo por delante</h2>{lead_html}<ul class="list" style="margin-top:8px">{mom_html}</ul></div></section>
+<section id="equipos"><h2>Comparativa de equipos</h2><div class="card">{leg}{comp}</div></section>
+<section id="avanzada"><h2>Estadística avanzada</h2><div class="card"><div class="scroll"><table>
+<tr><th>Métrica</th><th>{esc(g["teams"][A]["code"])}</th><th>{esc(g["teams"][B]["code"])}</th></tr>{adv_rows}</table></div>{glos}</div></section>
+
 <section id="cuartos"><h2>Puntos por cuarto</h2><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
 <div class="card">{quarter_heat(g, A)}</div><div class="card">{quarter_heat(g, B)}</div></div></section>
 <section id="quintetos"><h2>Quintetos y conexiones</h2><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));align-items:start">
