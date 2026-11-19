@@ -299,7 +299,7 @@ def game_card(g, c, idx):
 {sparkline(g, idx)}<p class="one"><b>{esc(c["title"])}.</b> {esc(c["summary"])}</p>{mvp_html}</a>"""
 
 
-def round_page(games, crons, round_label, rounds_all, demo=False, competition="Euroliga"):
+def round_page(games, crons, round_label, rounds_all, demo=False, competition="Euroliga", extra_nav=""):
     cards = "".join(game_card(g, c, i) for i, (g, c) in enumerate(zip(games, crons)))
     dates = sorted({g.get("date") for g in games if g.get("date")}, key=_date_key)
     # destacados
@@ -346,9 +346,6 @@ def round_page(games, crons, round_label, rounds_all, demo=False, competition="E
                    for a, b, c in rec)
     nav = "".join(f'<a class="pill{" on" if r == round_label else ""}" href="{_round_file(r)}">J{esc(str(r))}</a>'
                   for r in rounds_all)
-    extra_nav = ('<div class="nav"><a class="pill" href="app/">📋 App Banquillo</a>'
-                 '<a class="pill" href="equipo/">Nuestro equipo</a></div>') if competition == "Euroliga" else \
-        '<div class="nav"><a class="pill" href="../app/">📋 App Banquillo</a><a class="pill" href="../">Euroliga</a></div>'
     body = f"""<header class="top"><div class="kicker">Informe {competition}</div>
 <h1>Jornada {esc(str(round_label))}</h1><div class="sub">{esc(" y ".join(dates))} · {len(games)} partidos</div>
 <div class="nav">{nav}</div>{extra_nav}</header>
@@ -618,7 +615,7 @@ document.querySelectorAll('table.pbp tr').forEach(function(r){{r.hidden=(f==='sc
 
 # ---------------------------------------------------------------- sitio
 
-def build_site(games, out_dir, demo=False, competition="Euroliga", footer=None):
+def build_site(games, out_dir, demo=False, competition="Euroliga", footer=None, extra_nav=""):
     """games: lista de análisis (salida de analysis.analyze)."""
     global FOOTER
     FOOTER = footer or "Generado automáticamente a partir del play-by-play oficial de la Euroliga."
@@ -640,7 +637,7 @@ def build_site(games, out_dir, demo=False, competition="Euroliga", footer=None):
         for g, c in zip(gs, crons):
             with open(os.path.join(out_dir, "partidos", f"{g['season']}-{g['game_code']}.html"), "w", encoding="utf-8") as f:
                 f.write(match_page(g, c, demo))
-        html = round_page(gs, crons, r, rounds, demo, competition)
+        html = round_page(gs, crons, r, rounds, demo, competition, extra_nav)
         with open(os.path.join(out_dir, _round_file(r)), "w", encoding="utf-8") as f:
             f.write(html)
         latest = html

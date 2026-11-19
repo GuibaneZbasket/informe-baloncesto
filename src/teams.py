@@ -22,8 +22,13 @@ EUROLEAGUE_TEAMS = {
     "MIL": "Olimpia Milano",
     "VIR": "Virtus Bolonia",
     "DUB": "Dubai Basketball",
+    "BES": "Beşiktaş",
 }
 
 
 def short_name(code, fallback=None):
-    return EUROLEAGUE_TEAMS.get((code or "").strip(), fallback or code)
+    name = EUROLEAGUE_TEAMS.get((code or "").strip())
+    if name:
+        return name
+    fallback = fallback or code
+    return fallback.title() if fallback and fallback.isupper() else fallback

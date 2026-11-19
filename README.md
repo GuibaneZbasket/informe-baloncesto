@@ -31,20 +31,9 @@ Pestaña **Actions** → *Informe diario* → **Run workflow**. La primera vez d
 En un par de minutos tendrás la web en:
 `https://TU-USUARIO.github.io/informe-baloncesto/`
 
-Guárdala en la pantalla de inicio del móvil y listo: cada día a las 7:15 (hora de Madrid) se actualiza sola.
+Guárdala en la pantalla de inicio del móvil y listo: cada madrugada (hacia las 6, hora de Madrid) se actualiza sola.
 
 ---
-
-## App Banquillo (estadística de nuestro equipo en directo)
-
-Está en `https://TU-USUARIO.github.io/informe-baloncesto/app/`. Ábrela en la tablet y usa "Añadir a pantalla de inicio": funciona sin conexión y guarda todo en el dispositivo.
-
-1. **Nuevo partido**: equipos, dorsales (del rival basta el número) y quintetos iniciales.
-2. **Anotar**: toca jugador → acción. La app pregunta lo siguiente (asistencia, rebote, falta sobre quién, tiros libres). El reloj se arranca/para tocándolo.
-3. **Informe**: en cualquier momento, del partido o de cada cuarto: dónde perdemos, qué funciona, cuatro factores, comparativa, jugadores, quintetos y parciales.
-4. **Partido → Exportar**: descarga un `.json`. Súbelo a la carpeta `data/equipo/` del repositorio (Add file → Upload files) y en unos minutos aparece el informe completo en `/equipo/`.
-
-> Los jugadores son menores: usa solo dorsal y nombre de pila o iniciales, porque los informes publicados son públicos.
 
 ## Uso en local (opcional)
 

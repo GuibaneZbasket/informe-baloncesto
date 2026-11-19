@@ -2,12 +2,10 @@ name: Informe diario
 
 on:
   schedule:
-    # 06:15 UTC = 07:15 en Madrid en invierno (08:15 en verano)
-    - cron: "15 6 * * *"
+    # GitHub suele lanzar las tareas programadas con retraso (a veces más de 1 hora),
+    # así que la programamos de madrugada: 04:40 UTC = 05:40 en Madrid (06:40 en verano)
+    - cron: "40 4 * * *"
   workflow_dispatch: {}   # botón "Run workflow" para lanzarlo a mano
-  push:                   # al subir un partido de la app o cambiar la app
-    branches: [main]
-    paths: ["data/equipo/**", "app/**"]
 
 permissions:
   contents: write
